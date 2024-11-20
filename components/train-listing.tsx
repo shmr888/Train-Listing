@@ -8,12 +8,10 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import dynamic from 'next/dynamic'
 import 'leaflet/dist/leaflet.css'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { LatLngExpression } from 'leaflet'
 import { Input } from "@/components/ui/input"
 import { Train } from 'lucide-react'
 import Link from 'next/link'
-
 
 // Import Leaflet types only on client side
 let L: any
@@ -194,13 +192,17 @@ function calculateDuration(departure: string, arrival: string): string {
 }
 
 const TrainMap = ({ train }: { train: TrainRoute }) => {
+  let L: any
   useEffect(() => {
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon-2x.png',
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
-    });
+    if (typeof window !== 'undefined') {
+      L = require('leaflet');
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
+      });
+    }
   }, []);
 
   const fromCoords = stations[train.from].coordinates;
