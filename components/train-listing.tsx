@@ -8,7 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import dynamic from 'next/dynamic'
 import 'leaflet/dist/leaflet.css'
-//import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { LatLngExpression } from 'leaflet'
 import { Input } from "@/components/ui/input"
 import { Train } from 'lucide-react'
 import Link from 'next/link'
@@ -212,7 +213,7 @@ const TrainMap = ({ train }: { train: TrainRoute }) => {
     : [fromCoords, toCoords];
 
   // Calculate center point between stations
-  const center = [
+  const center: LatLngExpression = [
     (fromCoords[0] + toCoords[0]) / 2,
     (fromCoords[1] + toCoords[1]) / 2
   ];
@@ -220,7 +221,7 @@ const TrainMap = ({ train }: { train: TrainRoute }) => {
   return (
     <div className="h-full w-full rounded-lg overflow-hidden">
       <MapContainer
-        center={center}
+        center={center as LatLngExpression}
         zoom={6}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
