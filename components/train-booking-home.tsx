@@ -10,9 +10,20 @@ import Image from 'next/image'
 
 export default function Component() {
   const [passengerCount, setPassengerCount] = useState(1)
+  const [fromStation, setFromStation] = useState("")
+  const [toStation, setToStation] = useState("")
 
   const incrementPassengers = () => setPassengerCount(prev => Math.min(prev + 1, 9))
   const decrementPassengers = () => setPassengerCount(prev => Math.max(prev - 1, 1))
+
+  // Add popular Indian stations
+  const popularStations = [
+    { value: "CBE", label: "Coimbatore (CBE)" },
+    { value: "MAS", label: "Chennai (MAS)" },
+    { value: "SBC", label: "Bengaluru (SBC)" },
+    { value: "MUM", label: "Mumbai (MUM)" },
+    { value: "DEL", label: "Delhi (DEL)" },
+  ]
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -62,8 +73,30 @@ export default function Component() {
                       </SelectContent>
                     </Select>
                     <div className="flex space-x-2">
-                      <Input className="flex-1" placeholder="From" />
-                      <Input className="flex-1" placeholder="To" />
+                      <Select onValueChange={(value) => setFromStation(value)}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="From Station" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {popularStations.map((station) => (
+                            <SelectItem key={station.value} value={station.value}>
+                              {station.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select onValueChange={(value) => setToStation(value)}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="To Station" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {popularStations.map((station) => (
+                            <SelectItem key={station.value} value={station.value}>
+                              {station.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="flex space-x-2">
                       <Input className="flex-1" type="date" placeholder="Departure" />
@@ -98,8 +131,8 @@ export default function Component() {
                       </Button>
                     </div>
                     <Link href={"/listing"}>
-                  <Button className="bg-blue-700 w-full text-white hover:bg-white hover:text-blue-700 " type="submit">
-                    <Search className="mr-2 h-4 w-4" />
+                  <Button className="bg-blue-700 w-full text-white hover:bg-white hover:text-blue-700"type="submit">
+                    <Search className="mr-2 h-4 w-4 gap-4" />
                     Search Trains ({passengerCount} {passengerCount === 1 ? 'Passenger' : 'Passengers'})
                   </Button>
                     </Link>

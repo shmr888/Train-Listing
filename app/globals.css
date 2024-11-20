@@ -71,3 +71,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+@import 'leaflet/dist/leaflet.css';
+
+/* Add these styles after your existing CSS */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
