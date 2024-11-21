@@ -192,17 +192,14 @@ function calculateDuration(departure: string, arrival: string): string {
 }
 
 const TrainMap = ({ train }: { train: TrainRoute }) => {
-  let L: any
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      L = require('leaflet');
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon-2x.png',
-        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
-      });
-    }
+    const L = require('leaflet');
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon-2x.png',
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
+    });
   }, []);
 
   const fromCoords = stations[train.from].coordinates;
@@ -221,13 +218,12 @@ const TrainMap = ({ train }: { train: TrainRoute }) => {
   ];
 
   return (
-    <div className="h-full w-full rounded-lg overflow-hidden">
+    <div className="h-[600px] rounded-xl overflow-hidden shadow-lg border border-gray-100">
       <MapContainer
-        center={center as LatLngExpression}
+        center={center}
         zoom={6}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={false}
-        attributionControl={true}
+        className="h-full w-full"
+        style={{ borderRadius: "0.75rem" }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -256,78 +252,98 @@ const TrainMap = ({ train }: { train: TrainRoute }) => {
   )
 }
 
+const TrainCard = ({ route }: { route: TrainRoute }) => (
+  <Card className="hover:shadow-lg transition-all duration-300 border-none bg-white rounded-xl overflow-hidden">
+    <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-4">
+      <div className="flex justify-between items-start">
+        <div>
+          <CardTitle className="text-xl font-bold text-blue-900">{route.name}</CardTitle>
+          <CardDescription className="text-blue-600">
+            {stations[route.from].name} → {stations[route.to].name}
+          </CardDescription>
+        </div>
+        {route.type === 'indirect' && (
+          <Badge className="bg-blue-100 text-blue-600 rounded-full px-3">Connected</Badge>
+        )}
+      </div>
+    </CardHeader>
+    <CardContent className="pt-4">
+      <div className="flex justify-between items-center">
+        <div className="text-center">
+          <p className="text-sm text-gray-500">Departure</p>
+          <p className="text-2xl font-bold text-gray-900">{route.departure}</p>
+        </div>
+        <div className="flex-1 px-4">
+          <div className="h-0.5 bg-blue-100 relative">
+            <div className="absolute -top-1 left-0 w-2 h-2 rounded-full bg-blue-400" />
+            <div className="absolute -top-1 right-0 w-2 h-2 rounded-full bg-blue-400" />
+          </div>
+        </div>
+        <div className="text-center">
+          <p className="text-sm text-gray-500">Arrival</p>
+          <p className="text-2xl font-bold text-gray-900">{route.arrival}</p>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)
+
 const TrainList = ({ routes, onSelectRoute }: { routes: TrainRoute[], onSelectRoute: (route: TrainRoute) => void }) => (
   <ScrollArea className="h-[600px]">
     {routes.map((route) => (
-      <Card 
-        key={route.id} 
-        className="mb-4 cursor-pointer hover:shadow-lg transition-shadow border-blue-100 hover:border-blue-200"
-        onClick={() => onSelectRoute(route)}
-      >
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="text-blue-800">{route.name}</CardTitle>
-              <CardDescription>
-                {stations[route.from].name} to {stations[route.to].name}
-              </CardDescription>
-            </div>
-            {route.type === 'indirect' && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700">Connected Journey</Badge>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between mb-4">
-            <div>
-              <p className="text-sm font-medium">Departure</p>
-              <p className="text-2xl font-bold">{route.departure}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-medium">Duration</p>
-              <p className="text-lg font-semibold">{calculateDuration(route.departure, route.arrival)}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-medium">Arrival</p>
-              <p className="text-2xl font-bold">{route.arrival}</p>
-            </div>
-          </div>
-          
-          {route.stops && (
-            <div className="mt-4">
-              <p className="text-sm font-medium mb-2">Stops:</p>
-              {route.stops.map((stop, index) => (
-                <div key={index} className="text-sm">
-                  <p>{stations[stop.station].name}</p>
-                  <p>Arrival: {stop.arrival} - Departure: {stop.departure}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {route.alternateRoute && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-amber-600">
-                Alternative Route Available:
-              </p>
-              <p className="text-sm text-gray-600">
-                Nearest station: {route.alternateRoute.nearestStation} 
-                ({route.alternateRoute.distance}km away)
-              </p>
-              <p className="text-sm text-gray-600">
-                {route.alternateRoute.trainName} - 
-                {route.alternateRoute.departure} to {route.alternateRoute.arrival}
-              </p>
-            </div>
-          )}
-
-          <div className="mt-4">
-            <p className="text-lg font-bold">₹{route.price}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <TrainCard key={route.id} route={route} />
     ))}
   </ScrollArea>
+)
+
+// Update the search section with this modern design
+const SearchSection = () => (
+  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl shadow-sm">
+    <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex-1 space-y-2">
+        <Input
+          type="text"
+          placeholder="From..."
+          className="h-12 rounded-lg border-blue-200 focus:border-blue-400"
+        />
+        <Input
+          type="text"
+          placeholder="To..."
+          className="h-12 rounded-lg border-blue-200 focus:border-blue-400"
+        />
+      </div>
+      <Button 
+        className="h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+      >
+        Search Trains
+      </Button>
+    </div>
+  </div>
+)
+
+// Replace header section with this modern design
+const Header = () => (
+  <header className="fixed top-0 w-full z-50 px-6 py-3 bg-white/80 backdrop-blur-md border-b">
+    <div className="flex items-center justify-between max-w-7xl mx-auto">
+      <Link className="flex items-center space-x-2" href="/">
+        <Train className="h-6 w-6 text-blue-600" />
+        <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+          RailJourney
+        </span>
+      </Link>
+      <nav className="hidden md:flex space-x-8">
+        <Link className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors" href="#">
+          Routes
+        </Link>
+        <Link className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors" href="#">
+          Schedules
+        </Link>
+        <Link className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors" href="#">
+          Passes
+        </Link>
+      </nav>
+    </div>
+  </header>
 )
 
 export default function TrainListingPage() {
@@ -375,26 +391,7 @@ export default function TrainListingPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-14 flex items-center bg-blue-700">
-        <Link className="flex items-center justify-center" href="/">
-          <Train className="h-6 w-6 bg-white" />
-          <span className="ml-2 text-lg font-semibold text-white">RailJourney</span>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6 text-white">
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-            Routes
-          </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-            Schedules
-          </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-            Passes
-          </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-            Deals
-          </Link>
-        </nav>
-      </header>
+      <Header />
 
       <div className="container mx-auto p-4">
         <h1 className="text-3xl font-bold mb-4 text-blue-800">Train Listings</h1>
